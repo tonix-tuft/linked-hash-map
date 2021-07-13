@@ -1,0 +1,10 @@
+nbproject/**
+!nbproject/project.properties
+!nbproject/project.xml
+vendor/
+node_modules/
+.DS_Store
+composer.lock
+phpunit.xml
+**/private_local_*
+.vscode/

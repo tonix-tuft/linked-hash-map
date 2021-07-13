@@ -1,0 +1,36 @@
+{
+  "name": "tonix-tuft/linked-hash-map",
+  "description": "How I would implement a linked hash map in PHP if PHP wouldn't have associative arrays.",
+  "keywords": [
+    "map",
+    "data-structures",
+    "data-structure",
+    "linked-hash-map",
+    "hash-map",
+    "hash-table",
+    "linked"
+  ],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Anton Bagdatyev (Tonix)",
+      "email": "antonytuft@gmail.com"
+    }
+  ],
+  "type": "library",
+  "require": {
+    "php": "^7.0",
+    "tonix-tuft/int-hash": "^1.0",
+    "tonix-tuft/php-utils": "^1.15",
+    "tonix-tuft/php-declarative-factory": "^1.3",
+    "tonix-tuft/fun": "^1.3"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^8.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "LinkedHashMap\\": "src/LinkedHashMap/"
+    }
+  }
+}
