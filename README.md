@@ -175,7 +175,7 @@ foreach ($map as $key => $value) {
 // 'b', 2
 ```
 
-4. Appending/prepending to the map works in the same way as with built-in PHP arrays (a positional index (an int >= 0) is created or the highest positional index used so far is incremented internally).
+4. Appending/prepending to the map works in the same way as with built-in PHP arrays (a positional index (an `int or integer string >= 0`) is created or the highest positional index used so far is incremented internally).
    Accessing an unknown index does not trigger/emit a notice (just returns `NULL`):
 
 ```php
@@ -206,7 +206,7 @@ var_dump($arr[1234]); // "Value for index 1234"
 var_dump($arr[1235]); // "Value for index 1235"
 ```
 
-3. Because [ArrayAccess::offsetSet](https://www.php.net/manual/en/arrayaccess.offsetset.php) doesn't allow to differentiate between `NULL` and an append/prepend operation (`$map[] = 'A value'`), `NULL` cannot be used for the key. Using `NULL` for the key will be considered as an append/prepend operation. As built-in PHP arrays map `NULL` to an empty string `''`, this shouldn't be an issue:
+5. Because [ArrayAccess::offsetSet](https://www.php.net/manual/en/arrayaccess.offsetset.php) doesn't allow to differentiate between `NULL` and an append/prepend operation (`$map[] = 'A value'`), `NULL` cannot be used for the key. Using `NULL` for the key will be considered as an append/prepend operation. As built-in PHP arrays map `NULL` to an empty string `''`, this shouldn't be an issue:
 
 ```php
 <?php
