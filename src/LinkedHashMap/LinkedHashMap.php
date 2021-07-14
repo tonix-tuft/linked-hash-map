@@ -325,8 +325,8 @@ class LinkedHashMap implements \Countable, \Iterator, \ArrayAccess {
     );
 
     $prevBucketNode = null;
+    $bucketLinkedListSize = 0;
     if ($node instanceof LinkedHashMapNode) {
-      $bucketLinkedListSize = 0;
       do {
         $bucketLinkedListSize++;
 
@@ -338,12 +338,11 @@ class LinkedHashMap implements \Countable, \Iterator, \ArrayAccess {
             ||
             // Integer string/int type juggling:
             (
-              (
-                IntUtils::isIntOrIntString($node->key)
-                ||
-                IntUtils::isIntOrIntString($key)
-              )
-              && $node->key == $key
+              IntUtils::isIntOrIntString($node->key)
+              &&
+              IntUtils::isIntOrIntString($key)
+              &&
+              $node->key == $key
             )
           )
         ) {
@@ -363,6 +362,7 @@ class LinkedHashMap implements \Countable, \Iterator, \ArrayAccess {
         $key,
         $hash,
         $bucketsArrayIndicesPath,
+        $bucketLinkedListSize,
         $prevBucketNode
       );
     }
@@ -533,7 +533,7 @@ class LinkedHashMap implements \Countable, \Iterator, \ArrayAccess {
        * If `$this->nextPositionalOffset > PHP_INT_MAX`, then it means that `$this->nextPositionalOffset` became a double
        * (i.e. `$this->nextPositionalOffset` is not an int anymore).
        *
-       * With builtin PHP arrays, appending to an array which has reached its PHP_INT_MAX offset
+       * With built-in PHP arrays, appending to an array which has reached its PHP_INT_MAX offset
        * will not append the element and will emit the following warning:
        *
        *     `Warning: Cannot add element to the array as the next element is already occupied`.
@@ -563,6 +563,7 @@ class LinkedHashMap implements \Countable, \Iterator, \ArrayAccess {
       $key,
       $hash,
       $bucketsArrayIndicesPath,
+      $bucketLinkedListSize,
       $prevBucketNode = null
     ) {
       /**
@@ -577,6 +578,9 @@ class LinkedHashMap implements \Countable, \Iterator, \ArrayAccess {
       $this->count++;
       if ($this->longestBucketLinkedListSize <= 0) {
         $this->longestBucketLinkedListSize = 1;
+      }
+      if ($bucketLinkedListSize + 1 > $this->longestBucketLinkedListSize) {
+        $this->longestBucketLinkedListSize = $bucketLinkedListSize + 1;
       }
       return $node;
     };
@@ -615,25 +619,34 @@ class LinkedHashMap implements \Countable, \Iterator, \ArrayAccess {
     if ($node instanceof LinkedHashMapNode) {
       $prevNode = $node->prevNode;
       $nextNode = $node->nextNode;
+      $prevBucketNode = $node->prevBucketNode;
+      $nextBucketNode = $node->nextBucketNode;
 
       if ($prevNode instanceof LinkedHashMapNode) {
         // There is a previous node.
-        $prevNode->nextNode = $node->nextNode;
+        $prevNode->nextNode = $nextNode;
       }
       if ($nextNode instanceof LinkedHashMapNode) {
         // There is a next node.
-        $nextNode->prevNode = $node->prevNode;
+        $nextNode->prevNode = $prevNode;
       }
+
+      if ($prevBucketNode instanceof LinkedHashMapNode) {
+        $prevBucketNode->nextBucketNode = $nextBucketNode;
+      }
+      if ($nextBucketNode instanceof LinkedHashMapNode) {
+        $nextBucketNode->prevBucketNode = $prevBucketNode;
+      }
+
       if ($this->headNode === $node) {
         $this->headNode = $nextNode;
       }
       if ($this->tailNode === $node) {
         $this->tailNode = $prevNode;
       }
-      if (!($node->prevBucketNode instanceof LinkedHashMapNode)) {
-        $nodePath = array_merge($bucketsArrayIndicesPath, [
-          $node->nextBucketNode,
-        ]);
+
+      if (!($prevBucketNode instanceof LinkedHashMapNode)) {
+        $nodePath = array_merge($bucketsArrayIndicesPath, [$nextBucketNode]);
         ArrayUtils::setNestedArrayValue($this->bucketsArray, ...$nodePath);
       }
       $this->count--;

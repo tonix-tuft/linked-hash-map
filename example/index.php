@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+use LinkedHashMap\HashCodeInterface;
 use LinkedHashMap\LinkedHashMap;
 
 $map = new LinkedHashMap();
@@ -432,6 +433,44 @@ echo PHP_EOL;
 $map[] = 'append 5';
 
 unset($map[PHP_INT_MAX]);
+//unset($map[9223372036854775710]);
+
+/*
+echo PHP_EOL;
+echo "foreach >";
+echo PHP_EOL;
+echo "------------------------------------------------------------------------------------------------------------------------------------------";
+$i = 1;
+$count = count($map);
+foreach ($map as $key => $value) {
+  echo PHP_EOL;
+  $label = "Iteration $i";
+  echo $label;
+  echo PHP_EOL;
+  echo str_pad('', strlen($label), '=');
+  echo PHP_EOL;
+  echo PHP_EOL;
+  $varExport = var_export($key, true);
+  echo "key:" .
+    PHP_EOL .
+    ($varExport === "NULL" && $key !== null
+      ? '(' . gettype($key) . ')'
+      : $varExport . ' (' . gettype($key) . ')');
+  echo PHP_EOL;
+  echo PHP_EOL;
+  echo "value:" . PHP_EOL . $value;
+  echo PHP_EOL;
+  echo PHP_EOL;
+  if ($count !== $i) {
+    echo "------------------------------------------------------------------------------------------------------------------------------------------";
+  }
+  $i++;
+}
+echo "------------------------------------------------------------------------------------------------------------------------------------------";
+echo PHP_EOL;
+echo "< foreach";
+echo PHP_EOL;
+//*/
 
 echo PHP_EOL;
 echo json_encode(
@@ -492,6 +531,59 @@ foreach ($map as $key => $value) {
 echo "------------------------------------------------------------------------------------------------------------------------------------------";
 echo PHP_EOL;
 echo "< foreach";
+echo PHP_EOL;
+
+class ClassWithCustomHashCode implements HashCodeInterface {
+  /**
+   * @var int
+   */
+  protected $propertyA;
+
+  /**
+   * @var int
+   */
+  protected $propertyB;
+
+  public function __construct() {
+    $this->propertyA = rand(0, 100000);
+    $this->propertyB = rand(0, 100000);
+  }
+
+  // ...
+
+  /**
+   * {@inheritdoc}
+   */
+  public function hashCode() {
+    // Compute the hash code somehow...
+    $prime = 31;
+    $hash = 1;
+    $hash = $prime * $hash + $this->propertyA;
+    $hash = $prime * $hash + $this->propertyB;
+    return $hash;
+  }
+}
+
+$obj1 = new ClassWithCustomHashCode();
+$obj2 = new ClassWithCustomHashCode();
+
+$map[$obj1] = "A value";
+$map[$obj2] = "Another value";
+
+echo PHP_EOL;
+echo json_encode(
+  [
+    'get $map[$obj1]' => $map[$obj1],
+    'isset($map[$obj1])' => isset($map[$obj1]),
+    'get $map[$obj2]' => $map[$obj2],
+    'isset($map[$obj2])' => isset($map[$obj2]),
+  ],
+  JSON_PRETTY_PRINT
+);
+echo PHP_EOL;
+
+echo PHP_EOL;
+echo json_encode(['count($map)' => count($map)], JSON_PRETTY_PRINT);
 echo PHP_EOL;
 
 echo PHP_EOL;
