@@ -36,6 +36,17 @@ $map[[1, 2, 3]] = 'array ([1, 2, 3])';
 $map[['a', 'b', 'c']] = "array (['a', 'b', 'c'])";
 $map[[1, 'a', false, 5, true, [1, 2, 3, ['f', 5, []]]]] =
   "array ([1, 'a', false, 5, true, [1, 2, 3, ['f', 5, []]]])";
+$map[
+  [
+    'a' => 1,
+    'b' => 'a',
+    'c' => false,
+    'd' => 5,
+    'e' => true,
+    [1, 'abc' => 2, 3, ['f' => 'f', 'g' => 5, ['hilmnopqrstuvwxyz' => 'a']]],
+  ]
+] =
+  "array (['a' => 1, 'b' => 'a', 'c' => false, 'd' => 5, 'e' => true, [1, 'abc' => 2, 3, ['f' => 'f', 'g' => 5, ['hilmnopqrstuvwxyz' => 'a']]]])";
 
 $arrayKey = [
   1,
@@ -65,6 +76,11 @@ $map[$fp] = "resource (fopen())";
 
 $ch = curl_init();
 $map[$ch] = "resource (curl_init())";
+
+$socket1 = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+$socket2 = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+$map[$socket1] = "resource (socket_create 1)";
+$map[$socket2] = "resource (socket_create 2)";
 
 $map[] = 'append 0';
 $map[] = 'append 1';
@@ -293,6 +309,47 @@ echo PHP_EOL;
 echo PHP_EOL;
 echo json_encode(
   [
+    "get \$map[['a' => 1, 'b' => 'a', 'c' => false, 'd' => 5, 'e' => true, [1, 'abc' => 2, 3, ['f' => 'f', 'g' => 5, ['hilmnopqrstuvwxyz' => 'a']]]]]" =>
+      $map[
+        [
+          'a' => 1,
+          'b' => 'a',
+          'c' => false,
+          'd' => 5,
+          'e' => true,
+          [
+            1,
+            'abc' => 2,
+            3,
+            ['f' => 'f', 'g' => 5, ['hilmnopqrstuvwxyz' => 'a']],
+          ],
+        ]
+      ],
+    "isset(\$map[['a' => 1, 'b' => 'a', 'c' => false, 'd' => 5, 'e' => true, [1, 'abc' => 2, 3, ['f' => 'f', 'g' => 5, ['hilmnopqrstuvwxyz' => 'a']]]])" => isset(
+      $map[
+        [
+          'a' => 1,
+          'b' => 'a',
+          'c' => false,
+          'd' => 5,
+          'e' => true,
+          [
+            1,
+            'abc' => 2,
+            3,
+            ['f' => 'f', 'g' => 5, ['hilmnopqrstuvwxyz' => 'a']],
+          ],
+        ]
+      ]
+    ),
+  ],
+  JSON_PRETTY_PRINT
+);
+echo PHP_EOL;
+
+echo PHP_EOL;
+echo json_encode(
+  [
     'get $map[$arrayKey]' => $map[$arrayKey],
     'isset($map[$arrayKey])' => isset($map[$arrayKey]),
   ],
@@ -345,6 +402,26 @@ echo json_encode(
   [
     'get $map[$ch]' => $map[$ch],
     'isset($map[$ch])' => isset($map[$ch]),
+  ],
+  JSON_PRETTY_PRINT
+);
+echo PHP_EOL;
+
+echo PHP_EOL;
+echo json_encode(
+  [
+    'get $map[$socket1]' => $map[$socket1],
+    'isset($map[$socket1])' => isset($map[$socket1]),
+  ],
+  JSON_PRETTY_PRINT
+);
+echo PHP_EOL;
+
+echo PHP_EOL;
+echo json_encode(
+  [
+    'get $map[$socket2]' => $map[$socket2],
+    'isset($map[$socket2])' => isset($map[$socket2]),
   ],
   JSON_PRETTY_PRINT
 );
@@ -573,10 +650,10 @@ $map[$obj2] = "Another value";
 echo PHP_EOL;
 echo json_encode(
   [
-    'get $map[$obj1]' => $map[$obj1],
-    'isset($map[$obj1])' => isset($map[$obj1]),
-    'get $map[$obj2]' => $map[$obj2],
-    'isset($map[$obj2])' => isset($map[$obj2]),
+    'get $map[$obj1 (ClassWithCustomHashCode)]' => $map[$obj1],
+    'isset($map[$obj1 (ClassWithCustomHashCode)])' => isset($map[$obj1]),
+    'get $map[$obj2 (ClassWithCustomHashCode)]' => $map[$obj2],
+    'isset($map[$obj2] (ClassWithCustomHashCode))' => isset($map[$obj2]),
   ],
   JSON_PRETTY_PRINT
 );
